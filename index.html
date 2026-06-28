@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CrashOS</title>
+        <style>
+            :root {
+                --bg-color: #008080;
+                --win-bg: #c0c0c0;
+                --win-border-light: #fff;
+                --win-border-dark: #808080;
+                --title-blue: #000080;
+                --title-red: #800000;
+            }
+            * {
+                box-sizing: border-box;
+                font-family: "Ms Sans Serif", Tahoma, Arial, sans-serif;
+                font-size: 12px;
+                user-select: none;
+            }
+            body, html {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                background-color: var(--bg-color);
+                background-image: url("https://files.manuscdn.com/user_upload_by_module/session_file/310519663635517342/NlrbAswFjkysALLE.jpg");
+                background-size: cover;
+                background-position: center;
+                overflow: hidden;
+            }
+            #desktop {
+                width: 100%;
+                height: calc(100% - 40px);
+                position: relative;
+            }
+            #recycle-bin {
+                position: absolute;
+                bottom: 50px;
+                right: 50px;
+                width: 90px;
+                height: 90px;
+                background: #000;
+                border: 2px solid;
+                border-color: var(--win-border-dark) var(--win-border-light) var(--win-border-light) var(--win-border-dark);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #ff0000;
+                font-weight: bold;
+                text-align: center;
+                z-index: 5;
+                font-family: "Courier New", monospace;
+                background-image: linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%, #111);
+                background-size: 4px 4px;
+            }
+            #recycle-bin span {
+                animation: retro-blink 1s steps(2, start) infinite;
+            }
+            @keyframes retro-blink { to { visibility: hidden; } }
+            .sys-file {
+                position: absolute;
+                width: 40px;
+                height: 50px;
+                background: #fff;
+                border: 1px solid #000;
+                box-shadow: 2px 2px 0 #000;
+                cursor: move;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-size: 9px;
+                font-weight: bold;
+                text-align: center;
+                z-index: 10;
+            }
+            #taskbar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 40px;
+                background-color: var(--win-bg);
+                border-top: 2px solid var(--win-border-dark);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 10px;
+                z-index: 999999;
+            }
+            .monitor-box {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: #e0e0e0;
+                padding: 4px 10px;
+                border: 2px inset var(--win-border-light);
+            }
+            .progress-bar-container {
+                width: 120px;
+                height: 16px;
+                background: #fff;
+                border: 2px inset var(--win-border-dark);
+            }
+            #ram-bar {
+                width: 0px;
+                height: 100%;
+                background: linear-gradient(90deg, #ffcc00, #ff0000);
+                transition: width 1s linear;
+            }
+            #antivirus-bar {
+                width: 0px;
+                height: 100%;
+                background: linear-gradient(90deg, #00ff00, #008000);
+                transition: width 1s linear;
+            }
+            .window {
+                position: absolute;
+                width: 300px;
+                background-color: var(--win-bg);
+                border: 2px solid;
+                border-color: var(--win-border-light) var(--win-border-dark) var(--win-border-dark) var(--win-border-light);
+                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.4);
+                padding: 2px;
+            }
+            .window.evil .title-bar {
+                background: linear-gradient(90deg, var(--title-red), #ff4500)
+            }
+            .title-bar {
+                background: linear-gradient(90deg, var(--title-blue), #1084d0);
+                color: white;
+                padding: 4px 6px;
+                font-weight: bold;
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                cursor: move;
+            }
+            .close-btn {
+                background: var(--win-bg);
+                color: black;
+                border: 1px solid;
+                border-color: var(--win-border-light) var(--win-border-dark) var(--win-border-dark) var(--win-border-light);
+                width: 18px;
+                height: 16px;
+                font-size: 10px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .window-body { 
+                padding: 15px;
+                text-align: center;
+            }
+            .fake-progress {
+                width: 100%;
+                height: 20px;
+                background: #eee;
+                border: 2px inset var(--win-border-dark);
+                margin: 10px 0;
+            }
+            .fake-progress-fill {
+                width: 0%;
+                height: 100%;
+                background: #000080;
+            }
+            .captcha-input {
+                width: 80%;
+                padding: 4px;
+                margin: 8px 0;
+                border: 2px inset var(--win-border-dark);
+                text-align: center;
+                font-weight: bold;
+                letter-spacing: 2px;
+            }
+            .dialog-btn {
+                padding: 4px 15px;
+                background: var(--win-bg);
+                border: 2px solid;
+                border-color: var(--win-border-light) var(--win-border-dark) var(--win-border-dark) var(--win-border-light);
+            }
+            .dialog-btn:disabled {
+                color: #808080;
+                cursor: not-allowed;
+            }
+            .fullscreen-msg {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                padding: 50px;
+                z-index: 1000000;
+                font-family: "Lucida Console", Courier, monospace;
+                font-size: 16px;
+            }
+            #tutorial-screen {
+                display: block;
+                background: #0000aa;
+                color: #fff;
+            }
+            #tutorial-screen h1 {
+                background: #aaaaaa;
+                color: #0000aa;
+                display: inline-block;
+                padding: 0 10px;
+            }
+            .tutorial-list {
+                margin: 20px 0;
+                line-height: 1.8;
+            }
+            #bsod {
+                background: #0000aa;
+                color: #ffffff;
+            }
+            #bsod h1 {
+                background: #ffffff;
+                color: #006400;
+                display: inline-block;
+                padding: 0 10px;
+            }
+            #win-screen {
+                background: #006400;
+                color: #ffffff;
+            }
+            .big-btn {
+                background: #aaaaaa;
+                color: #000000;
+                border: none;
+                padding: 10px 20px;
+                font-weight: bold;
+                cursor: pointer;
+                margin-top: 30px;
+                border: 2px outset #fff;
+                font-size: 14px;
+            }
+            .big-btn:active {
+                border: 2px inset #fff;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="tutorial-screen" class="fullscreen-msg">
+            <h1>Welcome to CrashOS</h1>
+            <p>Warning: Your system is heavily infected! The Antivirus need exactly <strong>5 minutes</strong> to remove all malware</p>
+            <div class="tutorial-list">
+                * <strong>Ram limit:</strong> Don't let your Ram usage hit 100%, or the system will crash.<br>
+                * <strong>Close windows:</strong> Closing pop ups will reduce your Ram usage.<br>
+                * <strong>The Void:</strong> Drag important system files (.DLL) away from the Void!<br>
+                * <strong>Red Titles:</strong> Do NOT click the "X" on the windows with the red title bars. <br>
+                * <strong>Capchas:</strong> Type the code to unlock the close button.<br>
+                * <strong>Warning:</strong> The last 30 seconds will trigger a core system meltdown. <br>
+                * <strong>Good Luck:</strong> You'll need it!<br>
+            </div>
+            <button class="big-btn" onclick="closeTutorial()">Boot System</button>
+        </div>
+        <div id="desktop">
+            <div id="recycle-bin"><span>Void</span></div>
+        </div>
+        <div id="taskbar">
+            <div class="monitor-box">
+                <strong>Antivirus (5 Mins)</strong>
+                <div class="progress-bar-container"><div id="antivirus-bar"></div></div>
+                <span id="anti-text">0%</span>
+            </div>
+            <div class="monitor-box">
+                <strong>Ram:</strong>
+                <div class="progress-bar-container"><div id="ram-bar"></div></div>
+                <span id="ram-text">0%</span>
+            </div>
+        </div>
+        <div id="bsod" class="fullscreen-msg">
+            <h1>SYSTEM CRASH</h1>
+            <p>Your operating system crashed. RAM capacity exceeded 100%.</p>
+            <p>Survival Progress: <span id="fail-percent">0%</span>% completed.</p>
+            <button class="big-btn" onclick="resetGame()">Play Again?</button>
+        </div>
+        <div id="win-screen" class="fullscreen-msg">
+            <h1>THE MALWARE IS DESTROYED!</h1>
+            <p>Congratulations! You have survived the full 5 minutes!</p>
+            <p>Your computer is safe... for now.</p>
+            <button class="big-btn" onclick="resetGame()">Play Again?</button>
+        </div>
+        <script>
+            const desktop = document.getElementById("desktop");
+            const ramBar = document.getElementById ("ram-bar");
+            const ramText = document.getElementById("ram-text");
+            const antiBar = document.getElementById("antivirus-bar");
+            const antiText = document.getElementById("anti-text");
+            const tutorial = document.getElementById("tutorial-screen");
+            const bsod = document.getElementById("bsod");
+            const winScreen = document.getElementById("win-screen");
+            const bin = document.getElementById("recycle-bin");
+
+            /// U shouldn't be here bad boiiiiiiii
+            /// so ummm iff ur here u should probably contact me on zoom: rishirahulsoman@gmail or sent me a request on Instagram my id is @Rishi.Rahul the one with the username as rishi.r_dxb and tell me what u think of the game and if u have any suggestions for it. Thaksssssssss 
+
+            let currentRam = 0;
+            let antivirusProgress = 0;
+            let topZIndex = 100;
+            let coreInterval, physicsInterval, antiInterval;
+            let baseSpawnRate = 2800;
+            let isGameOver = true;
+            let audioCtx = null;
+            
+            function playSound(freq, type = 'square', duration = 0.1) {
+                if (isGameOver) return;
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state == 'suspended') audioCtx.resume();
+                try {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                } catch (e) {}
+            }
+            function closeTutorial() {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state == 'suspended') audioCtx.resume();
+                tutorial.style.display = 'none';
+                startGame();
+            }
+            function startGame() {
+                isGameOver = false;
+                currentRam = 10;
+                antivirusProgress = 0;
+                topZIndex = 100;
+                
+                desktop.querySelectorAll('.window, .sys-file').forEach(el => el.remove ());
+                bsod.style.display = 'none';
+                winScreen.style.display = 'none';
+                updateRam(0);
+                updateAntivirusUI();
+                updateAntivirus();
+                clearInterval(coreInterval);
+                clearInterval(physicsInterval);
+                clearInterval(antiInterval);
+                antiInterval = setInterval(updateAntivirus, 1000);
+                coreInterval = setInterval(gameLoop, baseSpawnRate);
+                physicsInterval = setInterval(updatePhysics, 50);
+                spawnPopUp();
+            }
+            function updateRam(amount) {
+                if (isGameOver) return;
+                currentRam = Math.min(100, Math.max(0, currentRam + amount));
+                ramBar.style.width= currentRam + '%';
+                ramText.textContent = Math.floor(currentRam) + '%';
+                if (currentRam >= 100) triggerBSOD();
+            }
+            function updateAntivirus() {
+                if (isGameOver) return;
+                antivirusProgress += 0.3333;
+                updateAntivirusUI();
+                if (antivirusProgress >= 100) triggerWin();
+            }
+            function updateAntivirusUI() {
+                let displayVal = Math.min(100, Math.floor(antivirusProgress));
+                antiBar.style.width = displayVal + '%';
+                antiText.innerText = displayVal + '%';
+            }
+            function gameLoop() {
+                if (isGameOver) return;
+                const isPanicMode = antivirusProgress >= 90;
+                if (Math.random() > 0.25) spawnPopUp();
+                else spawnSystemFile();
+                if (isPanicMode) {
+                }
+                if (isPanicMode) {
+                    if (Math.random() > 0.3) spawnPopUp();
+                    else spawnSystemFile();
+                    playSound(180, 'sawtooth', 0.05);
+                }
+                clearInterval(coreInterval);
+                let minDelayFloor = isPanicMode ? 350 : 800;
+                let currentSpeed = Math.max(minDelayFloor, baseSpawnRate - (antivirusProgress * 22));
+                coreInterval = setInterval(gameLoop, currentSpeed);
+            }
+            function spawnPopUp() {
+                if (isGameOver) return;
+                const win = document.createElement('div');
+                win.classList.add('window');
+                topZIndex++;
+                win.style.zIndex = topZIndex;
+                const maxX = window.innerWidth - 320;
+                const maxY = window.innerHeight - 240;
+                win.style.left = Math.floor(Math.random() * Math.max(maxX, 20)) + 'px';
+                win.style.top = Math.floor (Math.random() * Math.max(maxY, 20)) + 'px';
+                const r = Math.random();
+                if (r < 0.25) {
+                    win.classList.add('evil');
+                    win.innerHTML = `
+                    <div class="title-bar"><span>Fake Error</span><button class="close-btn" onclick="triggerTrap(this.parentElement.parentElement)">X</button></div>
+                        <div class="window-body">
+                            <p>Do NOT click the X! click below instead;</p>
+                            <button class="dialog-btn" onclick="closeWindow(this.parentElement.parentElement, -5)">Close Safely</button>
+                            </div>`;
+                        } else if (r < 0.85) {
+                            win.innerHTML = `
+                            <div class="title-bar"><span>Loading...Malware</span><button class="close-btn" onclick="closeWindow(this.parentElement.parentElement)">X</button></div>
+                            <div class="window-body">
+                                <p>Generating fake updates...</p>
+                                <div class="fake-progress"><div class="fake-progress-bar"></div></div>
+                                <button class="dialog-btn" style="font-size: 10px;" onclick="closeWindow(this.parentElement.parentElement, -4)">Force Quit</button>
+                            </div>`;
+                            playSound(300, 'sine', 0.15);
+                            animateProgressBar(win.querySelector('.fake-progress-fill'));
+                    } else {
+                        const codes = ['FIX', 'SAFE', 'END', 'CORE', 'KILL', 'BOOT'];
+                        const targetCode = codes[Math.floor(Math.random() * codes.length)];
+                        win.innerHTML = `
+                        <div class="title-bar"><span>Locked</span><button class="close-btn" onclick="playSound (100, 'square', 0.2)">X</button></div>
+                        <div class="window-body">
+                            <p>Type <strong>${targetCode}</strong> to unlock:</p>
+                            <input type="text" class="captcha-input" placeholder="...">
+                            <br><button class="dialog-btn" disabled>Unlock</button>
+                        </div>`;
+                        playSound(450, 'square', 0.1);
+                        const input = win.querySelector('.captcha-input');
+                        const btn = win.querySelector('.dialog-btn');
+                        input.addEventListener('input', () => {
+                            if (input.value.trim().toUpperCase() === targetCode) {
+                                btn.removeAttribute('disabled');
+                                btn.onclick = () => closeWindow(win, -8);
+                            }
+                        });
+                    }
+                    win.addEventListener('mousedown', () => focusWindow(win));
+                    desktop.appendChild(win);
+                    makeDraggable(win);
+                    updateRam(4);
+                }
+                function animateProgressBar(fillEl) {
+                    let width = 0;
+                    let interval = setInterval(() => {
+                        if (isGameOver || !document.body.contains(fillEl))
+                    {clearInterval(interval); return;}
+                    if (width < 99) {
+                        width += Math.random() * 20;
+                        if (width > 99) width = 99;
+                        fillEl.style.width = width + '%';
+                    } else {
+                        updateRam(1);
+                    }
+                }, 500);
+            }
+            function spawnSystemFile() {
+                if (isGameOver) return;
+                const file = document.createElement('div');
+                file.classList.add('sys-file');
+                file.classList.add('sys-file');
+                file.innerHTML = `<br>SYS.DLL`;
+                file.style.left = Math.floor(Math.random() * (window.innerWidth * 0.5)) + 'px';
+                file.style.top = Math.floor(Math.random() * (window.innerHeight * 0.8)) + 'px';
+
+                setTimeout(() => {
+                    if (!isGameOver && document.contains(file)) {
+                        file.remove();
+                        updateRam(-2);
+                        playSound(600, 'sine', 0.1);
+                    }
+                }, 8000);
+                desktop.appendChild(file);
+                makeDraggable(file);
+                playSound(600, 'triangle', 0.1);
+            }
+            function triggerTrap(win) {
+                if (isGameOver) return;
+                playSound(120, 'sawtooth', 0.3);
+                spawnPopUp();
+                spawnPopUp();
+                win.remove();
+                updateRam(10);
+            }
+            function updatePhysics() {
+                if (isGameOver) return;
+                const files = document.querySelectorAll('.sys-file');
+                const binRect = bin.getBoundingClientRect();
+                const binX = binRect.left + binRect.width / 2;
+                const binY = binRect.top + binRect.height /2;
+
+                files.forEach(file => {
+                    if(file.dataset.dragging === "true") return;
+                    const fRect = file.getBoundingClientRect();
+                    const fileX = fRect.left + fRect.width / 2;
+                    const fileY = fRect.top + fRect.height / 2;
+                
+                let dx = binX - fileX;
+                let dy = binY - fileY;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < 45) {
+                    file.remove();
+                    updateRam(-12);
+                    playSound(90, 'sawtooth', 0.4);
+                } else {
+                    let speed = 2.5;
+                    file.style.left = (file.offsetLeft + (dx / distance) * speed) + 'px';
+                    file.style.top = (file.offsetTop + (dy / distance) * speed) + 'px';
+                }
+            });
+        }
+            function focusWindow(win) {
+                topZIndex++;
+                win.style.zIndex = topZIndex;
+            }
+            function closeWindow(win, ramReward) {
+                if (isGameOver) return;
+                playSound(440, 'sine', 0.05);
+                win.remove();
+                updateRam(ramReward);
+            }
+            function triggerBSOD() {
+                isGameOver = true;
+                stopGameLoop();
+                if(audioCtx) {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 1.5);
+                }
+                document.getElementById('fail-percent').innerText = Math.floor(antivirusProgress);
+                bsod.style.display = 'block';
+            }
+            function triggerWin() {
+                isGameOver = true;
+                stopGameLoop();
+                if (audioCtx) {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 1.0);
+                }
+                winScreen.style.display = 'block';
+            }
+            function stopGameLoop() {
+                clearInterval(coreInterval);
+                clearInterval(physicsInterval);
+                clearInterval(antiInterval);
+            }
+            function resetGame() {
+                startGame();
+            }
+            function makeDraggable(element) {
+                let pos1 = 0, pos2 = 0, pos3 =0, pos4 = 0;
+                const handle = element.querySelector('.title-bar') ||element;
+                handle.onmousedown = dragMouseDown;
+
+                function dragMouseDown(e) {
+                    if (isGameOver) return;
+                    e = e || window.event;
+                    if(e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+
+                    e.preventDefault();
+                    element.dataset.dragging = "true";
+                    if(element.classList.contains('window')) focusWindow(element);
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    document.onmouseup = closeDragElement;
+                    document.onmousemove = elementDrag;
+                }
+                function elementDrag(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    element.style.top = (element.offsetTop - pos2) + "px";
+                    element.style.left = (element.offsetLeft - pos1) + "px";
+                }
+                function closeDragElement() {
+                    element.dataset.dragging = "false";
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                }
+            }
+        </script>
+    </body>
+</html>
