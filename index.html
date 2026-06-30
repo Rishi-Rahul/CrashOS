@@ -26,6 +26,7 @@
                 height: 100%;
                 background-color: var(--bg-color);
                 background-image: url("https://files.manuscdn.com/user_upload_by_module/session_file/310519663635517342/NlrbAswFjkysALLE.jpg");
+                /* i asked manus to make me the background cause when i tried to add it myself it just kept giving me a teal screen so i asked manus to do it for meee.  */
                 background-size: cover;
                 background-position: center;
                 overflow: hidden;
@@ -126,18 +127,18 @@
                 padding: 2px;
             }
             .window.evil .title-bar {
-                background: linear-gradient(90deg, var(--title-red), #ff4500)
+            background: linear-gradient(90deg, var(--title-red), #ff4500);
             }
             .title-bar {
-                background: linear-gradient(90deg, var(--title-blue), #1084d0);
-                color: white;
-                padding: 4px 6px;
-                font-weight: bold;
-                display: flex;
-                justify-content: space-around;
-                align-items: center;
-                cursor: move;
-            }
+    background: linear-gradient(90deg, var(--title-blue), #1084d0);
+    color: white;
+    padding: 4px 6px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    cursor: move;
+}
             .close-btn {
                 background: var(--win-bg);
                 color: black;
@@ -250,7 +251,7 @@
                 * <strong>Close windows:</strong> Closing pop ups will reduce your Ram usage.<br>
                 * <strong>The Void:</strong> Drag important system files (.DLL) away from the Void!<br>
                 * <strong>Red Titles:</strong> Do NOT click the "X" on the windows with the red title bars. <br>
-                * <strong>Capchas:</strong> Type the code to unlock the close button.<br>
+                * <strong>Captchas:</strong> Type the code to unlock the close button.<br>
                 * <strong>Warning:</strong> The last 30 seconds will trigger a core system meltdown. <br>
                 * <strong>Good Luck:</strong> You'll need it!<br>
             </div>
@@ -285,7 +286,7 @@
         </div>
         <script>
             const desktop = document.getElementById("desktop");
-            const ramBar = document.getElementById ("ram-bar");
+            const ramBar = document.getElementById("ram-bar");
             const ramText = document.getElementById("ram-text");
             const antiBar = document.getElementById("antivirus-bar");
             const antiText = document.getElementById("anti-text");
@@ -294,8 +295,8 @@
             const winScreen = document.getElementById("win-screen");
             const bin = document.getElementById("recycle-bin");
 
-            /// U shouldn't be here bad boiiiiiiii
-            /// so ummm iff ur here u should probably contact me on zoom: rishirahulsoman@gmail or sent me a request on Instagram my id is @Rishi.Rahul the one with the username as rishi.r_dxb and tell me what u think of the game and if u have any suggestions for it. Thaksssssssss 
+            // U shouldn't be here bad boiiiiiiii
+            // so ummm iff ur here u should probably contact me on zoom: rishirahulsoman@gmail or sent me a request on Instagram my id is @Rishi.Rahul the one with the username as rishi.r_dxb and tell me what u think of the game and if u have any suggestions for it. Thaksssssssss 
 
             let currentRam = 0;
             let antivirusProgress = 0;
@@ -305,22 +306,26 @@
             let isGameOver = true;
             let audioCtx = null;
             
-            function playSound(freq, type = 'square', duration = 0.1) {
-                if (isGameOver) return;
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state == 'suspended') audioCtx.resume();
-                try {
-                    let osc = audioCtx.createOscillator();
-                    let gain = audioCtx.createGain();
-                    osc.type = type;
-                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + duration);
-                } catch (e) {}
-            }
+    function playSound(freq, type = 'square', duration = 0.1) {
+        if (isGameOver) return;
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state == 'suspended') audioCtx.resume();
+        try {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            // ↙️ FIXED: Set an initial volume baseline anchor before ramping
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch (e) { }
+    }
             function closeTutorial() {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if (audioCtx.state == 'suspended') audioCtx.resume();
@@ -333,7 +338,7 @@
                 antivirusProgress = 0;
                 topZIndex = 100;
                 
-                desktop.querySelectorAll('.window, .sys-file').forEach(el => el.remove ());
+                desktop.querySelectorAll('.window, .sys-file').forEach(el => el.remove());
                 bsod.style.display = 'none';
                 winScreen.style.display = 'none';
                 updateRam(0);
@@ -347,13 +352,15 @@
                 physicsInterval = setInterval(updatePhysics, 50);
                 spawnPopUp();
             }
-            function updateRam(amount) {
-                if (isGameOver) return;
-                currentRam = Math.min(100, Math.max(0, currentRam + amount));
-                ramBar.style.width= currentRam + '%';
-                ramText.textContent = Math.floor(currentRam) + '%';
-                if (currentRam >= 100) triggerBSOD();
-            }
+            function updateRam(amount = 0) {
+                    if (isGameOver || isNaN(amount)) return;
+                    currentRam = Math.min(100, Math.max(0, currentRam + amount));
+                    ramBar.style.width = currentRam + '%';
+                    ramText.textContent = Math.floor(currentRam) + '%';
+                    if (currentRam >= 100) {
+                        triggerBSOD();
+                    }
+                }
             function updateAntivirus() {
                 if (isGameOver) return;
                 antivirusProgress += 0.3333;
@@ -370,8 +377,6 @@
                 const isPanicMode = antivirusProgress >= 90;
                 if (Math.random() > 0.25) spawnPopUp();
                 else spawnSystemFile();
-                if (isPanicMode) {
-                }
                 if (isPanicMode) {
                     if (Math.random() > 0.3) spawnPopUp();
                     else spawnSystemFile();
@@ -391,7 +396,7 @@
                 const maxX = window.innerWidth - 320;
                 const maxY = window.innerHeight - 240;
                 win.style.left = Math.floor(Math.random() * Math.max(maxX, 20)) + 'px';
-                win.style.top = Math.floor (Math.random() * Math.max(maxY, 20)) + 'px';
+                win.style.top = Math.floor(Math.random() * Math.max(maxY, 20)) + 'px';
                 const r = Math.random();
                 if (r < 0.25) {
                     win.classList.add('evil');
@@ -403,10 +408,10 @@
                             </div>`;
                         } else if (r < 0.85) {
                             win.innerHTML = `
-                            <div class="title-bar"><span>Loading...Malware</span><button class="close-btn" onclick="closeWindow(this.parentElement.parentElement)">X</button></div>
+                            <div class="title-bar"><span>Loading...Malware</span><button class="close-btn" onclick="closeWindow(this.parentElement.parentElement, -4)">X</button></div>
                             <div class="window-body">
                                 <p>Generating fake updates...</p>
-                                <div class="fake-progress"><div class="fake-progress-bar"></div></div>
+                                <div class="fake-progress"><div class="fake-progress-fill"></div></div>
                                 <button class="dialog-btn" style="font-size: 10px;" onclick="closeWindow(this.parentElement.parentElement, -4)">Force Quit</button>
                             </div>`;
                             playSound(300, 'sine', 0.15);
@@ -415,7 +420,7 @@
                         const codes = ['FIX', 'SAFE', 'END', 'CORE', 'KILL', 'BOOT'];
                         const targetCode = codes[Math.floor(Math.random() * codes.length)];
                         win.innerHTML = `
-                        <div class="title-bar"><span>Locked</span><button class="close-btn" onclick="playSound (100, 'square', 0.2)">X</button></div>
+                        <div class="title-bar"><span>Locked</span><button class="close-btn" onclick="playSound(100, 'square', 0.2)">X</button></div>
                         <div class="window-body">
                             <p>Type <strong>${targetCode}</strong> to unlock:</p>
                             <input type="text" class="captcha-input" placeholder="...">
@@ -425,11 +430,14 @@
                         const input = win.querySelector('.captcha-input');
                         const btn = win.querySelector('.dialog-btn');
                         input.addEventListener('input', () => {
-                            if (input.value.trim().toUpperCase() === targetCode) {
-                                btn.removeAttribute('disabled');
-                                btn.onclick = () => closeWindow(win, -8);
-                            }
-                        });
+                        if (input.value.trim().toUpperCase() === targetCode) {
+                            btn.removeAttribute('disabled');
+                            btn.onclick = () => closeWindow(win, -8);
+                        } else {
+                            btn.setAttribute('disabled', 'true');
+                            btn.onclick = null;
+                        }
+                    });
                     }
                     win.addEventListener('mousedown', () => focusWindow(win));
                     desktop.appendChild(win);
@@ -454,15 +462,14 @@
                 if (isGameOver) return;
                 const file = document.createElement('div');
                 file.classList.add('sys-file');
-                file.classList.add('sys-file');
                 file.innerHTML = `<br>SYS.DLL`;
                 file.style.left = Math.floor(Math.random() * (window.innerWidth * 0.5)) + 'px';
                 file.style.top = Math.floor(Math.random() * (window.innerHeight * 0.8)) + 'px';
 
                 setTimeout(() => {
-                    if (!isGameOver && document.contains(file)) {
+                    if (!isGameOver && document.body.contains(file)) {
                         file.remove();
-                        updateRam(-2);
+                        updateRam(5);
                         playSound(600, 'sine', 0.1);
                     }
                 }, 8000);
@@ -482,7 +489,7 @@
                 if (isGameOver) return;
                 const files = document.querySelectorAll('.sys-file');
                 const binRect = bin.getBoundingClientRect();
-                const binX = binRect.left + binRect.width / 2;
+                const binX = binRect.left + binRect.width /2;
                 const binY = binRect.top + binRect.height /2;
 
                 files.forEach(file => {
@@ -497,7 +504,7 @@
 
                 if (distance < 45) {
                     file.remove();
-                    updateRam(-12);
+                    updateRam(12);
                     playSound(90, 'sawtooth', 0.4);
                 } else {
                     let speed = 2.5;
