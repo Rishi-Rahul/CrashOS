@@ -404,8 +404,9 @@
                     <div class="title-bar"><span>Fake Error</span><button class="close-btn" onclick="triggerTrap(this.parentElement.parentElement)">X</button></div>
                         <div class="window-body">
                             <p>Do NOT click the X! click below instead;</p>
-                            <button class="dialog-btn" onclick="closeWindow(this.parentElement.parentElement, -5)">Close Safely</button>
+                            <button class="dialog-btn" onclick="closeWindow(this.parentElement.parentElement, -4)">Close Safely</button>
                             </div>`;
+                            updateRam(5);
                         } else if (r < 0.85) {
                             win.innerHTML = `
                             <div class="title-bar"><span>Loading...Malware</span><button class="close-btn" onclick="closeWindow(this.parentElement.parentElement, -4)">X</button></div>
@@ -416,6 +417,7 @@
                             </div>`;
                             playSound(300, 'sine', 0.15);
                             animateProgressBar(win.querySelector('.fake-progress-fill'));
+                            updateRam(4);
                     } else {
                         const codes = ['FIX', 'SAFE', 'END', 'CORE', 'KILL', 'BOOT'];
                         const targetCode = codes[Math.floor(Math.random() * codes.length)];
@@ -432,17 +434,17 @@
                         input.addEventListener('input', () => {
                         if (input.value.trim().toUpperCase() === targetCode) {
                             btn.removeAttribute('disabled');
-                            btn.onclick = () => closeWindow(win, -8);
+                            btn.onclick = () => closeWindow(win, -4);
                         } else {
                             btn.setAttribute('disabled', 'true');
                             btn.onclick = null;
                         }
                     });
+                    updateRam(8);
                     }
                     win.addEventListener('mousedown', () => focusWindow(win));
                     desktop.appendChild(win);
                     makeDraggable(win);
-                    updateRam(4);
                 }
                 function animateProgressBar(fillEl) {
                     let width = 0;
